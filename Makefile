@@ -2,4 +2,7 @@ bootstrap:
 	scripts/requirements.sh
 
 install:
-	. venv/bin/activate && python site.py
+	scripts/install.sh
+
+clean: 
+	rm -rf venv
