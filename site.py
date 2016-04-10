@@ -1,3 +1,4 @@
+import os
 from suitable import Api
 
 hosts = Api(['centos7.zerotier'], 
@@ -5,17 +6,23 @@ hosts = Api(['centos7.zerotier'],
             sudo=True,
             verbosity='debug')
 
+def add_epel_repository():
+    hosts.yum(name='epel-release')
 
 def install_vagrant():
   hosts.yum(name='https://releases.hashicorp.com/vagrant/1.8.1/vagrant_1.8.1_x86_64.rpm')
 
 
 def install_virtualbox():
+  add_epel_repository()
   hosts.get_url(url='http://download.virtualbox.org/virtualbox/rpm/rhel/virtualbox.repo', 
                 dest='/etc/yum.repos.d/virtualbox.repo')
   
   hosts.yum(name='kernel-devel')
   hosts.yum(name='VirtualBox-5.0')
+  hosts.user(name=os.environ['USER'], groups='vboxusers', append='yes')
+  hosts.shell("KERN_DIR=/usr/src/kernels/`rpm -q kernel-devel --queryformat '%{version}-%{release}.%{arch}'` /usr/lib/virtualbox/vboxdrv.sh setup")
+  hosts.service(name='vboxdrv', state='started', enabled='yes')
 
 
 def install_mesos():
