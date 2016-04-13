@@ -121,9 +121,18 @@ def install_mesos():
    group='root', 
    mode='u=rw,g=r,o=r' 
   )
+  hosts.template(
+   src='templates/zones-trusted.xml.j2', 
+   dest='/etc/firewalld/zones/trusted.xml', 
+   owner='root', 
+   group='root', 
+   mode='u=rw,g=r,o=r' 
+  )
   hosts.service(name='mesos-master', state='started', enabled='yes')
   hosts.service(name='mesos-slave', state='started', enabled='yes')
   hosts.service(name='marathon', state='started', enabled='yes')
+  hosts.service(name='firewalld', state='started', enabled='yes')
+  hosts.service(name='firewalld', state='reloaded', enabled='yes')
 
 
 @echo
@@ -140,10 +149,18 @@ def update_os():
   if updated:
     print('reboot this')
 
+@echo
+def install_docker():
+  hosts.shell('curl -sSL https://get.docker.com/ | sh')
+  hosts.service(name='docker', state='started', enabled='yes')
+  hosts.user(name=os.environ['USER'], groups='docker', append='yes')
+
+
         
 update_os()
 add_epel_repository()
 install_mesos()
 install_virtualbox()
 install_vagrant()
+install_docker()
 
