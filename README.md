@@ -141,5 +141,3 @@ IP=10.147.17.156
 There is an issue with Centos 7 FirewallD and Docker. While it seems to be marked as fixed upstream, I had multiple issues and it wasn't clear if the cause was firewalld or not.
 The playbooks in this example, disable firewalld and enable iptables
 
-
-
