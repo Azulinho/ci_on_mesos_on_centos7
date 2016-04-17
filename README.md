@@ -6,22 +6,18 @@ Deployment scripts for: Mesos Cluster + Marathon + Vagrant
 USAGE:
 =======
 
+  virtualenv venv
+  . venv/bin/activate
+  pip install ansible
 
-First set the following variables:
+Edit inventory/<my new inventory>
 
-  export IP_ADDRESS=<ip address of the host to bootstrap>
-  export REMOTE_USER=< remote user with sudo and ssh access>
-  export HOSTNAME=<hostname of the remote box>
+  ansible-playbook -i inventory/<my new inventory> site.yaml
 
-Then:
+And you should have installed:
 
-	make bootstrap
-	make install
-
-And you should have installed: 
-
-* Mesos 
-* Virtualbox 
+* Mesos
+* Virtualbox
 * Vagrant
 
 And running:
@@ -35,7 +31,7 @@ You can access the Mesos Master on: http://IP_ADDRESS:5050
 
 The marathon frameworks is also installed and available on http://IP_ADDRESS:8080
 
- 
+
 This setup would allow you to consume this mesos cluster through the Jenkins Mesos Plugin, and the (forked) Jenkins Vagrant plugin (https://github.com/Azulinho/vagrant-plugin.git)
 
 So that a jenkins job would allocate a mesos slave on demand and spin up an ephemeral vagrant instance (linux/windows/OSX) to run a particular build/test/deployment test job.
@@ -47,7 +43,7 @@ this is a logfile of a jenkins job consuming a vagrant instance, inside a mesos 
 	[EnvInject] - Loading node environment variables.
 	Building remotely on mesos-jenkins-89f5f525-e22a-41dd-a8d1-93ca0d39adf0 (mesos-512MB) in workspace /tmp/mesos/slaves/5d3fad8a-ab07-4eaa-9a82-04dc1dd5faa8-S0/frameworks/5d3fad8a-ab07-4eaa-9a82-04dc1dd5faa8-0002/executors/mesos-jenkins-89f5f525-e22a-41dd-a8d1-93ca0d39adf0/runs/c3b0bf6f-93ed-4a52-965e-adcd7c0fcf0f/jenkins/workspace/mesos
 	[EnvInject] - Executing scripts and injecting environment variables after the SCM step.
-	[EnvInject] - Injecting as environment variables the properties content 
+	[EnvInject] - Injecting as environment variables the properties content
 	HOME=/root
 
 	[EnvInject] - Variables injected successfully.
@@ -113,16 +109,16 @@ this is a logfile of a jenkins job consuming a vagrant instance, inside a mesos 
 	==> default: Destroying VM and associated drives...
 
 	Finished: SUCCESS
-  
+
 
 
 GOTCHAS:
-======== 
+========
 
 Depending on the networking setup, you have to make sure the Mesos Master is using the correct ip address, when the master box has multiple IP addresses.
 
 
-	cat /etc/default/mesos-master 
+	cat /etc/default/mesos-master
 	PORT=5050
 	ZK=`cat /etc/mesos/zk`
 	ADVERTISE_IP=10.147.17.156
@@ -130,7 +126,7 @@ Depending on the networking setup, you have to make sure the Mesos Master is usi
 
 
 There is an issue with Centos 7 FirewallD and Docker. While it seems to be marked as fixed upstream, I had multiple issues and it wasn't clear if the cause was firewalld or not.
-Disable the Firewall and check again.
+The playbooks in this example, disable firewalld and enable iptables
 
 
 

@@ -1,0 +1,97 @@
+---
+- name: adding mesos repository
+  command:
+    rpm -Uhv http://repos.mesosphere.io/el/7/noarch/RPMS/mesosphere-el-repo-7-1.noarch.rpm
+  args:
+    creates: /etc/yum.repos.d/mesosphere.repo
+  when: ansible_os_family == 'RedHat'
+
+- name: adding mesos repository
+  zypper_repository:
+    name=mesosphere
+    repo=http://repos.mesosphere.io/el/7/noarch/RPMS/mesosphere-el-repo-7-1.noarch.rpm
+    state=present
+  when: ansible_os_family == 'Suse'
+
+- name: installing mesos
+  package:
+    name={{ item }}
+  with_items:
+    - mesosphere-zookeeper
+    - mesos
+    - marathon
+
+- name: setting zookeeper myid
+  lineinfile:
+    dest=/var/lib/zookeeper/myid
+    line='1'
+    create=yes
+
+- name: adding servers to zoo.cfg file
+  lineinfile:
+    dest=/etc/zookeeper/conf/zoo.cfg
+    line='server.1={{ ansible_default_ipv4['address'] }}:2888:3888'
+
+- name: making sure zookeeper is running
+  service:
+    name=zookeeper
+    state=started
+    enabled=yes
+
+- name: setting mesos-master quorum
+  lineinfile:
+    dest=/etc/mesos-master/quorum
+    line='1'
+    create=yes
+
+- name: setting mesos-master hostname
+  lineinfile:
+    dest=/etc/mesos-master/hostname
+    line="{{ inventory_hostname }}"
+    create=yes
+
+- name: setting marathon hostname
+  lineinfile:
+    dest=/etc/marathon/conf/hostname
+    line="{{ inventory_hostname }}"
+    create=yes
+
+- name: install iptables
+  package:
+    name: iptables-services
+    state: present
+
+- name: Open the correct IPTables ports
+  lineinfile:
+    dest=/etc/sysconfig/iptables
+    regexp="^-A INPUT -p {{item.protocol}} -m {{item.protocol}} --dport {{item.port}} -j ACCEPT$"
+    line="-A INPUT -p {{item.protocol}} -m {{item.protocol}} --dport {{item.port}} -j ACCEPT"
+    insertafter="^:OUTPUT ACCEPT \[\d*:\d*\]$"
+    create=yes
+  with_items:
+    - { protocol: tcp, port: 22 }
+    - { protocol: tcp, port: 2181 }
+    - { protocol: tcp, port: 2888 }
+    - { protocol: tcp, port: 3888 }
+    - { protocol: tcp, port: 5050 }
+    - { protocol: tcp, port: 5051 }
+    - { protocol: tcp, port: 8080 }
+  register: iptables
+
+- name: making sure all services are up and running
+  service:
+    name={{ item }}
+    state=started
+    enabled=yes
+  with_items:
+    - mesos-master
+    - mesos-slave
+    - marathon
+    - iptables
+
+- name: reloading iptables
+  service:
+    name=iptables
+    state=reloaded
+    enabled=yes
+  when: iptables.changed

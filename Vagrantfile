@@ -10,87 +10,53 @@ Vagrant.configure(2) do |config|
   # For a complete reference, please see the online documentation at
   # https://docs.vagrantup.com.
 
-  # Every Vagrant development environment requires a box. You can search for
-  # boxes at https://atlas.hashicorp.com/search.
-  config.vm.box = "centos-7"
-  config.vm.box_url = "https://github.com/holms/vagrant-centos7-box/releases/download/7.1.1503.001/CentOS-7.1.1503-x86_64-netboot.box"
+  machines = [
+    { 'name' => 'centos7',
+      'url' => 'https://github.com/holms/vagrant-centos7-box/releases/download/7.1.1503.001/CentOS-7.1.1503-x86_64-netboot.box',
+      'ip' =>  '192.168.33.96' },
+    { 'name' => 'suse12',
+      'url' => 'http://sourceforge.net/projects/opensusevagrant/files/12.3/opensuse-12.3-32.box/download',
+      'ip' =>  '192.168.33.97' }]
 
-  # Disable automatic box update checking. If you disable this, then
-  # boxes will only be checked for updates when the user runs
-  # `vagrant box outdated`. This is not recommended.
-  # config.vm.box_check_update = false
+  machines.each do |item|
+      config.vm.define item['name'] do |machine|
+        machine.vm.box = item['name']
+        machine.vm.box_url = item['url']
+        machine.vm.hostname = item['name']
+        machine.vm.network "private_network", ip: item['ip']
+        machine.vm.synced_folder ".", "/vagrant", type: "rsync", rsync__exclude: "venv"
 
-  # Create a forwarded port mapping which allows access to a specific port
-  # within the machine from a port on the host machine. In the example below,
-  # accessing "localhost:8080" will access port 80 on the guest machine.
-  # config.vm.network "forwarded_port", guest: 80, host: 8080
+        machine.vm.provider "virtualbox" do |vb|
+          vb.memory = "1024"
+          vb.linked_clone = true if Vagrant::VERSION =~ /^1.8/
+        end
 
-  # Create a private network, which allows host-only access to the machine
-  # using a specific IP.
-  config.vm.network "private_network", ip: "192.168.33.96"
+        machine.ssh.insert_key = false
+        machine.ssh.private_key_path = ["~/.ssh/id_rsa", "~/.vagrant.d/insecure_private_key"]
+        machine.vm.provision "file", source: "~/.ssh/id_rsa.pub", destination: "~/.ssh/authorized_keys"
 
-  # Create a public network, which generally matched to bridged network.
-  # Bridged networks make the machine appear as another physical device on
-  # your network.
-  # config.vm.network "public_network"
-
-  # Share an additional folder to the guest VM. The first argument is
-  # the path on the host to the actual folder. The second argument is
-  # the path on the guest to mount the folder. And the optional third
-  # argument is a set of non-required options.
-  # config.vm.synced_folder "../data", "/vagrant_data"
-    config.vm.synced_folder ".", "/vagrant", type: "rsync", rsync__exclude: "venv"
-
-  # Provider-specific configuration so you can fine-tune various
-  # backing providers for Vagrant. These expose provider-specific options.
-  # Example for VirtualBox:
-  #
-  config.vm.provider "virtualbox" do |vb|
-  #   # Display the VirtualBox GUI when booting the machine
-  #   vb.gui = true
-  #
-  #   # Customize the amount of memory on the VM:
-    vb.memory = "1024"
-    vb.linked_clone = true if Vagrant::VERSION =~ /^1.8/
+        # provision all the VMs in parallel, we wait until we have booted
+        # up all the VMs before executing ansible
+      end
   end
-  #
-  # View the documentation for the provider you are using for more
-  # information on available options.
 
-  # Define a Vagrant Push strategy for pushing to Atlas. Other push strategies
-  # such as FTP and Heroku are also available. See the documentation at
-  # https://docs.vagrantup.com/v2/push/atlas.html for more information.
-  # config.push.define "atlas" do |push|
-  #   push.app = "YOUR_ATLAS_USERNAME/YOUR_APPLICATION_NAME"
-  # end
+  config.vm.provision :shell,
+    inline: 'rpm -e patterns-openSUSE-minimal_base-conflicts || echo'
 
-  $script = <<-SCRIPT
-  export IP_ADDRESS=#{ENV['IP_ADDRESS']}
-  export REMOTE_USER=#{ENV['REMOTE_USER']}
-  export HOSTNAME=#{ENV['HOSTNAME']}
-
-  cd /vagrant
-  scripts/requirements.sh
-  ssh-keyscan -H $IP_ADDRESS >> /home/vagrant/.ssh/known_hosts
-  scripts/install.sh
-  SCRIPT
-
-  # config.vm.provision "shell", inline: $script, privileged: false
-
-  config.ssh.insert_key = false
-  config.ssh.private_key_path = ["~/.ssh/id_rsa", "~/.vagrant.d/insecure_private_key"]
-  config.vm.provision "file", source: "~/.ssh/id_rsa.pub", destination: "~/.ssh/authorized_keys"
+  config.vm.provision :shell,
+    inline: 'test -e /usr/bin/zypper && zypper --non-interactive install python-pip'
 
   config.vm.provision :ansible do |ansible|
     ansible.playbook = "site.yml"
     ansible.limit = "all"
-    ansible.verbose = true
+    ansible.verbose = 'vvvv'
     ansible.sudo = true
-    ansible.raw_ssh_args = ["-o ControlMaster=no"]
+    ansible.raw_arguments = ["-f", "5"]
+    ansible.raw_ssh_args= ["-o ControlMaster=no", "-o ControlPersist=no", "-o ControlPath=/dev/null"]
     ansible.inventory_path = "./inventory/vagrant"
     ansible.groups = {
-      "centos7" => ["192.168.33.96"]
+      "centos7" => ["192.168.33.96"],
+      "suse12" => ["192.168.33.97"]
     }
   end
-  #
 end

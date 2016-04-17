@@ -1,0 +1,32 @@
+---
+- name: upgrade all packages
+  yum: name=*
+    state=latest
+  when: ansible_os_family == 'RedHat'
+
+- name: upgrade all packages
+  command: zypper --non-interactive update
+  when: ansible_os_family == 'Suse'
+
+- name: Check for reboot hint.
+  shell: LAST_KERNEL=$(rpm -q --last kernel | perl -pe 's/^kernel-(\S+).*/$1/' | head -1); CURRENT_KERNEL=$(uname -r); if [ $LAST_KERNEL != $CURRENT_KERNEL ]; then echo 'reboot'; else echo 'no'; fi
+  ignore_errors: true
+  register: reboot_hint
+
+- name: Rebooting ...
+  shell: sleep 2 && reboot
+  async: 1
+  poll: 0
+  sudo: true
+  ignore_errors: true
+  when: reboot_hint.stdout.find("reboot") == -1
+  register: rebooting
+
+- name: Wait for thing to reboot...
+  local_action:
+    module: wait_for
+      host={{ inventory_hostname | default(inventory_hostname) }}
+      state=started
+      delay=10
+      search_regex=OpenSSH
+  sudo: false

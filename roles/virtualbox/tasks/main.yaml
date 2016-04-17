@@ -1,0 +1,49 @@
+---
+- name: checking if vboxdrv kernel module is loaded
+  command: lsmod
+  register: lsmod
+
+- name: adding virtualbox repository
+  get_url:
+    url=http://download.virtualbox.org/virtualbox/rpm/rhel/virtualbox.repo
+    dest=/etc/yum.repos.d/virtualbox.repo
+  when: lsmod.stdout.find('vboxdrv') == -1 and ansible_os_family == 'RedHat'
+
+- name: adding virtualbox repository
+  zypper_repository:
+    repo=http://download.virtualbox.org/virtualbox/rpm/opensuse/12.3/virtualbox.repo
+    state=present
+  when: lsmod.stdout.find('vboxdrv') == -1 and ansible_os_family == 'Suse'
+
+- name: installing virtualbox
+  package:
+    name={{ item }}
+    state=latest
+    update_cache=yes
+  with_items:
+    - kernel-devel
+    - VirtualBox-5.0
+  when: lsmod.stdout.find('vboxdrv') == -1
+
+- name: checking if vboxdrv kernel module is loaded
+  command: lsmod
+  register: lsmod
+
+- name: recompiling virtualbox driver
+  shell: |
+    KERN_DIR=/usr/src/kernels/ \
+    `rpm -q kernel-devel --queryformat '%{version}-%{release}.%{arch}'` \
+    /usr/lib/virtualbox/vboxdrv.sh setup
+  when: lsmod.stdout.find('vboxdrv') == -1
+
+- name: adding user to vboxusers
+  user:
+    name={{ lookup('env','USER') }}
+    groups='vboxusers'
+    append=yes
+
+- name: enabling vboxdrv service
+  service:
+    name=vboxdrv
+    state=started
+    enabled=yes
