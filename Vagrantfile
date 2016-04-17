@@ -51,6 +51,7 @@ Vagrant.configure(2) do |config|
   #
   #   # Customize the amount of memory on the VM:
     vb.memory = "1024"
+    vb.linked_clone = true if Vagrant::VERSION =~ /^1.8/
   end
   #
   # View the documentation for the provider you are using for more
@@ -62,18 +63,34 @@ Vagrant.configure(2) do |config|
   # config.push.define "atlas" do |push|
   #   push.app = "YOUR_ATLAS_USERNAME/YOUR_APPLICATION_NAME"
   # end
- 
+
   $script = <<-SCRIPT
   export IP_ADDRESS=#{ENV['IP_ADDRESS']}
   export REMOTE_USER=#{ENV['REMOTE_USER']}
   export HOSTNAME=#{ENV['HOSTNAME']}
-  
+
   cd /vagrant
   scripts/requirements.sh
   ssh-keyscan -H $IP_ADDRESS >> /home/vagrant/.ssh/known_hosts
   scripts/install.sh
   SCRIPT
 
-  config.vm.provision "shell", inline: $script, privileged: false  
+  # config.vm.provision "shell", inline: $script, privileged: false
+
+  config.ssh.insert_key = false
+  config.ssh.private_key_path = ["~/.ssh/id_rsa", "~/.vagrant.d/insecure_private_key"]
+  config.vm.provision "file", source: "~/.ssh/id_rsa.pub", destination: "~/.ssh/authorized_keys"
+
+  config.vm.provision :ansible do |ansible|
+    ansible.playbook = "site.yml"
+    ansible.limit = "all"
+    ansible.verbose = true
+    ansible.sudo = true
+    ansible.raw_ssh_args = ["-o ControlMaster=no"]
+    ansible.inventory_path = "./inventory/vagrant"
+    ansible.groups = {
+      "centos7" => ["192.168.33.96"]
+    }
+  end
   #
 end

@@ -1,0 +1,199 @@
+---
+
+- hosts: centos7
+  sudo: True
+
+  tasks:
+    - name: upgrade all packages
+      yum: name=* state=latest
+
+    - name: Check for reboot hint.
+      shell: LAST_KERNEL=$(rpm -q --last kernel | perl -pe 's/^kernel-(\S+).*/$1/' | head -1); CURRENT_KERNEL=$(uname -r); if [ $LAST_KERNEL != $CURRENT_KERNEL ]; then echo 'reboot'; else echo 'no'; fi
+      ignore_errors: true
+      register: reboot_hint
+
+    - name: Rebooting ...
+      command: shutdown -r -t 1
+      async: 0
+      poll: 0
+      sudo: true
+      ignore_errors: true
+      when: reboot_hint.stdout.find("reboot") == -1
+      register: rebooting
+
+    - name: Wait for thing to reboot...
+      local_action:
+        module: wait_for
+          host={{ inventory_hostname | default(inventory_hostname) }}
+          state=started
+          delay=10
+          search_regex=OpenSSH
+      sudo: false
+      when: rebooting|changed
+
+    - name: adding epel repository
+      yum:
+        name=epel-release
+        state=present
+
+    - name: checking if vagrant is installed
+      stat:
+        path=/usr/bin/vagrant
+      register: vagrant_installed
+
+    - name: installing vagrant rpm
+      yum:
+        name=https://releases.hashicorp.com/vagrant/1.8.1/vagrant_1.8.1_x86_64.rpm
+      when: vagrant_installed.stat.exists
+
+    - name: checking if vboxdrv kernel module is loaded
+      command: lsmod
+      register: lsmod
+
+    - name: adding virtualbox repository
+      get_url:
+        url=http://download.virtualbox.org/virtualbox/rpm/rhel/virtualbox.repo
+        dest=/etc/yum.repos.d/virtualbox.repo
+      when: lsmod.stdout.find('vboxdrv') == -1
+
+    - name: installing virtualbox
+      yum:
+        name={{ item }}
+        state=latest
+        update_cache=yes
+      with_items:
+        - kernel-devel
+        - VirtualBox-5.0
+      when: lsmod.stdout.find('vboxdrv') == -1
+
+    - name: checking if vboxdrv kernel module is loaded
+      command: lsmod
+      register: lsmod
+
+    - name: recompiling virtualbox driver
+      shell: |
+        KERN_DIR=/usr/src/kernels/ \
+        `rpm -q kernel-devel --queryformat '%{version}-%{release}.%{arch}'` \
+        /usr/lib/virtualbox/vboxdrv.sh setup
+      when: lsmod.stdout.find('vboxdrv') == -1
+
+    - name: adding user to vboxusers
+      user:
+        name={{ lookup('env','USER') }}
+        groups='vboxusers'
+        append=yes
+
+    - name: enabling vboxdrv service
+      service:
+        name=vboxdrv
+        state=started
+        enabled=yes
+
+    - name: adding mesos repository
+      command:
+        rpm -Uhv http://repos.mesosphere.io/el/7/noarch/RPMS/mesosphere-el-repo-7-1.noarch.rpm
+      args:
+        creates: /etc/yum.repos.d/mesosphere.repo
+
+    - name: installing mesos
+      yum:
+        name={{ item }}
+        update_cache=yes
+      with_items:
+        - mesosphere-zookeeper
+        - mesos
+        - marathon
+
+    - name: setting zookeeper myid
+      lineinfile:
+        dest=/var/lib/zookeeper/myid
+        line='1'
+        create=yes
+
+    - name: adding servers to zoo.cfg file
+      lineinfile:
+        dest=/etc/zookeeper/conf/zoo.cfg
+        line='server.1={{ ansible_default_ipv4 }}:2888:3888'
+
+    - name: making sure zookeeper is running
+      service:
+        name=zookeeper
+        state=started
+        enabled=yes
+
+    - name: setting mesos-master quorum
+      lineinfile:
+        dest=/etc/mesos-master/quorum
+        line='1'
+        create=yes
+
+    - name: setting mesos-master hostname
+      lineinfile:
+        dest=/etc/mesos-master/hostname
+        line="{{ inventory_hostname }}"
+        create=yes
+
+    - name: setting marathon hostname
+      lineinfile:
+        dest=/etc/marathon/conf/hostname
+        line="{{ inventory_hostname }}"
+        create=yes
+
+    - name: install iptables
+      yum:
+        name: iptables-services
+        state: present
+
+    - name: Open the correct IPTables ports
+      lineinfile:
+        dest=/etc/sysconfig/iptables
+        regexp="^-A INPUT -p {{item.protocol}} -m {{item.protocol}} --dport {{item.port}} -j ACCEPT$"
+        line="-A INPUT -p {{item.protocol}} -m {{item.protocol}} --dport {{item.port}} -j ACCEPT"
+        insertafter="^:OUTPUT ACCEPT \[\d*:\d*\]$"
+        create=yes
+      with_items:
+        - { protocol: tcp, port: 22 }
+        - { protocol: tcp, port: 2181 }
+        - { protocol: tcp, port: 2888 }
+        - { protocol: tcp, port: 3888 }
+        - { protocol: tcp, port: 5050 }
+        - { protocol: tcp, port: 5051 }
+        - { protocol: tcp, port: 8080 }
+      register: iptables
+
+    - name: making sure all services are up and running
+      service:
+        name={{ item }}
+        state=started
+        enabled=yes
+      with_items:
+        - mesos-master
+        - mesos-slave
+        - marathon
+        - iptables
+
+    - name: reloading iptables
+      service:
+        name=iptables
+        state=reloaded
+        enabled=yes
+      when: iptables.changed
+
+    - name: installing docker
+      shell:
+        'curl -sSL https://get.docker.com/ | sh'
+      args:
+        creates: /usr/bin/docker
+
+    - name: starting docker
+      service:
+        name=docker
+        state=started
+        enabled=yes
+
+    - name: adding current user to docker group
+      user:
+        name={{ lookup('env','USER') }}
+        groups='docker'
+        append=yes
+
