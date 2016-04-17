@@ -113,7 +113,7 @@
     - name: adding servers to zoo.cfg file
       lineinfile:
         dest=/etc/zookeeper/conf/zoo.cfg
-        line='server.1={{ ansible_default_ipv4 }}:2888:3888'
+        line='server.1={{ ansible_default_ipv4['address'] }}:2888:3888'
 
     - name: making sure zookeeper is running
       service:
