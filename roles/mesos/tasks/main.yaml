@@ -14,12 +14,22 @@
   when: ansible_os_family == 'Suse'
 
 - name: installing mesos
-  package:
+  yum:
     name={{ item }}
   with_items:
     - mesosphere-zookeeper
     - mesos
     - marathon
+  when: ansible_os_family == 'RedHat'
+
+- name: installing mesos
+  zypper:
+    name={{ item }}
+  with_items:
+    - mesosphere-zookeeper
+    - mesos
+    - marathon
+  when: ansible_os_family == 'Suse'
 
 - name: setting zookeeper myid
   lineinfile:
@@ -57,9 +67,16 @@
     create=yes
 
 - name: install iptables
-  package:
+  yum:
     name: iptables-services
     state: present
+  when: ansible_os_family == 'RedHat'
+
+- name: install iptables
+  zypper:
+    name: iptables-services
+    state: present
+  when: ansible_os_family == 'Suse'
 
 - name: Open the correct IPTables ports
   lineinfile:

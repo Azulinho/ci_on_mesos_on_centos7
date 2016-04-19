@@ -16,13 +16,24 @@
   when: lsmod.stdout.find('vboxdrv') == -1 and ansible_os_family == 'Suse'
 
 - name: installing virtualbox
-  package:
+  yum:
+    name={{ item }}
+    state=latest
+    update_cache=yes
+  with_items:
+    - kernel-devel
+    - VirtualBox-5.0
+  when: lsmod.stdout.find('vboxdrv') == -1 and ansible_os_family == 'RedHat'
+
+- name: installing virtualbox
+  zypper:
     name={{ item }}
     state=latest
   with_items:
     - kernel-devel
     - VirtualBox-5.0
-  when: lsmod.stdout.find('vboxdrv') == -1
+  when: lsmod.stdout.find('vboxdrv') == -1 and ansible_os_family == 'Suse'
+
 
 - name: checking if vboxdrv kernel module is loaded
   command: lsmod
