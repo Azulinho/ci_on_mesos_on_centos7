@@ -15,7 +15,7 @@ Vagrant.configure(2) do |config|
       'url' => 'https://github.com/holms/vagrant-centos7-box/releases/download/7.1.1503.001/CentOS-7.1.1503-x86_64-netboot.box',
       'ip' =>  '192.168.33.96' },
     { 'name' => 'suse12',
-      'url' => 'http://sourceforge.net/projects/opensusevagrant/files/12.3/opensuse-12.3-32.box/download',
+      'url' => 'https://atlas.hashicorp.com/elastic/boxes/sles-12-x86_64/versions/0.1.1/providers/virtualbox.box',
       'ip' =>  '192.168.33.97' }]
 
   machines.each do |item|
@@ -39,12 +39,6 @@ Vagrant.configure(2) do |config|
         # up all the VMs before executing ansible
       end
   end
-
-  config.vm.provision :shell,
-    inline: 'rpm -e patterns-openSUSE-minimal_base-conflicts || echo'
-
-  config.vm.provision :shell,
-    inline: 'test -e /usr/bin/zypper && zypper --non-interactive install python-pip'
 
   config.vm.provision :ansible do |ansible|
     ansible.playbook = "site.yml"

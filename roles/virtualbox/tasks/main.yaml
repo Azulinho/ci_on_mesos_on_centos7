@@ -19,7 +19,6 @@
   package:
     name={{ item }}
     state=latest
-    update_cache=yes
   with_items:
     - kernel-devel
     - VirtualBox-5.0
