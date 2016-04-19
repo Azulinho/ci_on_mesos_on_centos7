@@ -69,7 +69,6 @@
     insertafter="^:OUTPUT ACCEPT \[\d*:\d*\]$"
     create=yes
   with_items:
-    - { protocol: tcp, port: 22 }
     - { protocol: tcp, port: 2181 }
     - { protocol: tcp, port: 2888 }
     - { protocol: tcp, port: 3888 }
