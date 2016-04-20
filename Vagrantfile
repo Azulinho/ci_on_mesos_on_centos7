@@ -28,11 +28,12 @@ Vagrant.configure(2) do |config|
 
         machine.vm.provider "virtualbox" do |vb|
           vb.memory = "1024"
-          vb.linked_clone = true if Vagrant::VERSION =~ /^1.8/
+          # vb.linked_clone = true if Vagrant::VERSION =~ /^1.8/
           vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
           vb.customize ["modifyvm", :id, "--nictype2", "virtio"]
           vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
           vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+          vb.customize ["storagectl",  :id, "--name", "SATA Controller", "--hostiocache", "on"]
         end
 
         machine.ssh.insert_key = false
