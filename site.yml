@@ -5,7 +5,7 @@
   - suse12
   become: yes
   become_user: root
-  become_method: su
+  become_method: sudo
 
   roles:
     - os-updates
