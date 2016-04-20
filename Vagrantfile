@@ -33,7 +33,7 @@ Vagrant.configure(2) do |config|
           vb.customize ["modifyvm", :id, "--nictype2", "virtio"]
           vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
           vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
-          vb.customize ["storagectl",  :id, "--name", "SATA Controller", "--hostiocache", "on"]
+          vb.customize ["storagectl",  :id, "--name", "IDE Controller", "--hostiocache", "on"]
         end
 
         machine.ssh.insert_key = false
