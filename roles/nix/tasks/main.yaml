@@ -1,0 +1,35 @@
+---
+
+- name: create user nix
+  user:
+    name={{ nix_user }}
+    groups={{ nix_group }}
+    append=yes
+    createhome=yes
+    shell={{ nix_shell }}
+    home={{ nix_home }}
+  when: ansible_os_family == 'Suse'
+
+
+- name: enable sudo access for nix
+  lineinfile: >
+    dest=/etc/sudoers.d/{{ nix_user }}
+    line='{{ nix_user }} ALL=(ALL) NOPASSWD: ALL'
+    create=yes
+  when: ansible_os_family == 'Suse'
+
+
+- name: installing nix
+  shell: |
+    curl https://nixos.org/nix/install | sh
+    . {{ nix_home }}/.nix-profile/etc/profile.d/nix.sh
+    nix-channel --add https://nixos.org/channels/nixos-15.09
+    nix-channel --update nixos-15.09
+  args:
+    chdir: /tmp
+    creates: /nix
+  become: yes
+  become_user: '{{ nix_user }}'
+  when: ansible_os_family == 'Suse'
+
+

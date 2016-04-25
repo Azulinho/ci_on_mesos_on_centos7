@@ -6,12 +6,6 @@
     creates: /etc/yum.repos.d/mesosphere.repo
   when: ansible_os_family == 'RedHat'
 
-- name: adding mesos repository
-  zypper_repository:
-    name=mesosphere
-    repo=http://repos.mesosphere.io/el/7/noarch/RPMS/mesosphere-el-repo-7-1.noarch.rpm
-    state=present
-  when: ansible_os_family == 'Suse'
 
 - name: installing mesos
   yum:
@@ -21,15 +15,6 @@
     - mesos
     - marathon
   when: ansible_os_family == 'RedHat'
-
-- name: installing mesos
-  zypper:
-    name={{ item }}
-  with_items:
-    - mesosphere-zookeeper
-    - mesos
-    - marathon
-  when: ansible_os_family == 'Suse'
 
 - name: setting zookeeper myid
   lineinfile:
@@ -72,11 +57,6 @@
     state: present
   when: ansible_os_family == 'RedHat'
 
-- name: install iptables
-  zypper:
-    name: iptables-services
-    state: present
-  when: ansible_os_family == 'Suse'
 
 - name: Open the correct IPTables ports
   lineinfile:

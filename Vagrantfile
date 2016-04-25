@@ -24,11 +24,12 @@ Vagrant.configure(2) do |config|
         machine.vm.box_url = item['url']
         machine.vm.hostname = item['name']
         machine.vm.network "private_network", ip: item['ip']
-        machine.vm.synced_folder ".", "/vagrant", type: "rsync", rsync__exclude: "venv"
+        #machine.vm.synced_folder ".", "/vagrant", type: "rsync", rsync__exclude: "venv"
 
         machine.vm.provider "virtualbox" do |vb|
           vb.memory = "1024"
-          # vb.linked_clone = true if Vagrant::VERSION =~ /^1.8/
+          # https://github.com/hashicorp/otto/issues/423#issuecomment-186076403
+          vb.linked_clone = true if Vagrant::VERSION =~ /^1.8/
           vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
           vb.customize ["modifyvm", :id, "--nictype2", "virtio"]
           vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
@@ -46,11 +47,19 @@ Vagrant.configure(2) do |config|
   end
 
   config.vm.provision :ansible do |ansible|
+    ansible_raw_arguments = ''
     ansible.playbook = "site.yml"
     ansible.limit = "all"
-    ansible.verbose = 'vvvv'
     ansible.sudo = true
     ansible.raw_arguments = ["-f", "5"]
+
+    if defined? ENV['TAGS']
+      ansible.tags = ENV['TAGS']
+    end
+    if defined? ENV['START_AT_TASK']
+      ansible.start_at_task = ENV['START_AT_TASK']
+    end
+
     ansible.raw_ssh_args= ["-o ControlMaster=no", "-o ControlPersist=no", "-o ControlPath=/dev/null"]
     ansible.inventory_path = "./inventory/vagrant"
     ansible.groups = {

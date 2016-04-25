@@ -3,16 +3,24 @@
   command: lsmod
   register: lsmod
 
+- name: adding virtualbox key
+  rpm_key:
+    key=https://www.virtualbox.org/download/oracle_vbox.asc
+    state=present
+  when: lsmod.stdout.find('vboxdrv') == -1
+
 - name: adding virtualbox repository
   get_url:
     url=http://download.virtualbox.org/virtualbox/rpm/rhel/virtualbox.repo
     dest=/etc/yum.repos.d/virtualbox.repo
   when: lsmod.stdout.find('vboxdrv') == -1 and ansible_os_family == 'RedHat'
 
+
 - name: adding virtualbox repository
   zypper_repository:
     repo=http://download.virtualbox.org/virtualbox/rpm/opensuse/12.3/virtualbox.repo
     state=present
+    refresh=yes
   when: lsmod.stdout.find('vboxdrv') == -1 and ansible_os_family == 'Suse'
 
 - name: installing virtualbox
