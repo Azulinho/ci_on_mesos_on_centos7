@@ -9,10 +9,12 @@
 
   roles:
     - os-updates
-    - virtualbox
-    - vagrant
-    - mesos
-    - docker
+    #- virtualbox
+    #- vagrant
+    - nix
+    - nix-mesos
+      # - mesos
+      #- docker
 
   #tasks:
     #- name: adding epel repository

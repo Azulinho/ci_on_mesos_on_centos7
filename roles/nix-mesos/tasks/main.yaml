@@ -1,0 +1,149 @@
+---
+
+- name: installing mesos through nix
+  shell: |
+    . {{ nix_home }}/.nix-profile/etc/profile.d/nix.sh
+    nix-env -f ~/.nix-defexpr/channels/nixos-15.09/nixpkgs/ -i {{ item }}
+  args:
+    executable: '{{ nix_shell }}'
+  become: yes
+  become_user: '{{ nix_user }}'
+  with_items:
+    - mesos
+    - zookeeper
+    - marathon
+    - apache-maven
+    - openjdk
+  when: ansible_os_family == 'Suse'
+  tags:
+    - mesos
+    - zookeeper
+    - marathon
+    - apache-maven
+    - openjdk
+
+
+- name: create required directories
+  file:
+    path={{ item.path }}
+    owner={{ item.owner }}
+    state=directory
+    recurse=yes
+  with_items:
+    - { path: '{{ zookeeper_datadir }}', owner: '{{ nix_user }}' }
+    - { path: '{{ zookeeper_logdir }}', owner: '{{ nix_user }}' }
+    - { path: '{{ zookeeper_bindir }}', owner: '{{ nix_user }}' }
+    - { path: '{{ zookeeper_confdir }}', owner: '{{ nix_user }}' }
+
+    - { path: '{{ mesos_master_datadir }}', owner: '{{ nix_user }}' }
+    - { path: '{{ mesos_master_logdir }}', owner: '{{ nix_user }}' }
+    - { path: '{{ mesos_master_bindir }}', owner: '{{ nix_user }}' }
+    - { path: '{{ mesos_master_confdir }}', owner: '{{ nix_user }}' }
+
+    - { path: '{{ mesos_slave_datadir }}', owner: '{{ nix_user }}' }
+    - { path: '{{ mesos_slave_logdir }}', owner: '{{ nix_user }}' }
+    - { path: '{{ mesos_slave_bindir }}', owner: '{{ nix_user }}' }
+    - { path: '{{ mesos_slave_confdir }}', owner: '{{ nix_user }}' }
+  when: ansible_os_family == 'Suse'
+  tags:
+    - mesos
+    - zookeeper
+    - marathon
+
+
+- name: deploying zookeeper files
+  template:
+    src='{{ item.src }}'
+    dest='{{ item.dest }}'
+    owner='{{ item.owner }}'
+    mode='{{ item.mode | default('644') }}'
+  with_items:
+    - { src: 'home.nix.zookeeper.conf.zoo.cfg',
+        dest: '{{ zookeeper_zoo_cfg }}',
+        owner: '{{ nix_user }}' }
+
+    - { src: 'home.nix.zookeeper.bin.start.sh',
+        dest: '{{ zookeeper_bin_start }}',
+        owner: '{{ nix_user }}',
+        mode: '0755' }
+
+    - { src: 'home.nix.zookeeper.data.myid',
+        dest: '{{ zookeeper_myid_file }}',
+        owner: '{{ nix_user }}' }
+
+    - { src: 'etc.systemd.system.zookeeper.service',
+        dest: '/etc/systemd/system/zookeeper.service',
+        owner: 'root' }
+
+  notify: restart-zookeeper
+  when: ansible_os_family == 'Suse'
+  tags:
+    - zookeeper
+    - systemd
+
+
+- name: deploying mesos-master files
+  template:
+    src={{ item.src }}
+    dest={{ item.dest }}
+    owner='root'
+  with_items:
+    - { src: 'etc.systemd.system.mesos-master.service',
+        dest: '/etc/systemd/system/mesos-master.service' }
+  notify: restart-mesos-master
+  when: ansible_os_family == 'Suse'
+  tags:
+    - mesos-master
+    - systemd
+
+
+- name: deploying mesos-slave files
+  template:
+    src={{ item.src }}
+    dest={{ item.dest }}
+    owner='root'
+  with_items:
+    - { src: 'etc.systemd.system.mesos-slave.service',
+        dest: '/etc/systemd/system/mesos-slave.service' }
+  notify: restart-mesos-slave
+  when: ansible_os_family == 'Suse'
+  tags:
+    - mesos-slave
+    - systemd
+
+
+- name: deploying marathon files
+  template:
+    src={{ item.src }}
+    dest={{ item.dest }}
+    owner='root'
+  with_items:
+    - { src: 'etc.systemd.system.marathon.service',
+        dest: '/etc/systemd/system/marathon.service' }
+  notify: restart-marathon
+  when: ansible_os_family == 'Suse'
+  tags:
+    - marathon
+    - systemd
+
+
+- name: start services
+  service:
+    name={{ item }}
+    state=started
+    enabled=yes
+  with_items:
+    - zookeeper
+    - mesos-master
+    - mesos-slave
+    - marathon
+  when: ansible_os_family == 'Suse'
+  tags:
+    - marathon
+    - zookeeper
+    - mesos-master
+    - mesos-slave
+    - systemd
+
+
+

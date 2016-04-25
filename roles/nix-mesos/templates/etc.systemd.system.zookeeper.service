@@ -1,0 +1,15 @@
+[Unit]
+Description=Zookeeper
+After=network.target
+
+[Service]
+Type=simple
+User={{ nix_user }}
+Environment="ZOOCFGDIR={{ zookeeper_confdir }}"
+
+ExecStart={{ zookeeper_bin_start }}
+
+Restart=Always
+
+[Install]
+WantedBy=multi-user.target
