@@ -1,0 +1,64 @@
+---
+
+- name: installing mesos through nix
+  shell: |
+    . {{ nix_home }}/.nix-profile/etc/profile.d/nix.sh
+    nix-env -f ~/.nix-defexpr/channels/nixos-15.09/nixpkgs/ -i {{ item }}
+  args:
+    executable: '{{ nix_shell }}'
+  become: yes
+  become_user: '{{ nix_user }}'
+  with_items:
+    - mesos
+    - apache-maven
+    - openjdk
+  tags:
+    - mesos-master
+    - apache-maven
+    - openjdk
+
+
+- name: create required directories
+  file:
+    path={{ item.path }}
+    owner={{ item.owner }}
+    state=directory
+    recurse=yes
+  with_items:
+    - { path: '{{ mesos_master_datadir }}', owner: '{{ nix_user }}' }
+    - { path: '{{ mesos_master_logdir }}', owner: '{{ nix_user }}' }
+    - { path: '{{ mesos_master_bindir }}', owner: '{{ nix_user }}' }
+    - { path: '{{ mesos_master_confdir }}', owner: '{{ nix_user }}' }
+  tags:
+    - mesos-master
+    - zookeeper
+    - marathon
+
+
+- name: deploying mesos-master files
+  template:
+    src={{ item.src }}
+    dest={{ item.dest }}
+    owner='root'
+  with_items:
+    - { src: 'etc.systemd.system.mesos-master.service',
+        dest: '/etc/systemd/system/mesos-master.service' }
+  notify: restart-mesos-master
+  tags:
+    - mesos-master
+    - systemd
+
+
+- name: start services
+  service:
+    name={{ item }}
+    state=started
+    enabled=yes
+  with_items:
+    - mesos-master
+  tags:
+    - mesos-master
+    - systemd
+
+
+
