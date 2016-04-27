@@ -80,10 +80,10 @@
     state=started
     enabled=yes
   with_items:
+    - iptables
     - mesos-master
     - mesos-slave
     - marathon
-    - iptables
 
 - name: reloading iptables
   service:
