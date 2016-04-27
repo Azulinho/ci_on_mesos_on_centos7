@@ -1,0 +1,12 @@
+---
+- name: clean resolv.conf
+  copy:
+    content=""
+    dest=/etc/resolv.conf
+  tags:
+    - mock
+
+- name: lock /etc/resolv.conf
+  command:  chattr +i /etc/resolv.conf
+  tags:
+    - mock
