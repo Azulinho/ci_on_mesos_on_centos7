@@ -4,8 +4,12 @@
   stat:
     path=/usr/bin/vagrant
   register: vagrant_installed
+  tags:
+    - vagrant
 
 - name: installing vagrant rpm
   yum:
     name=https://releases.hashicorp.com/vagrant/1.8.1/vagrant_1.8.1_x86_64.rpm
   when: vagrant_installed.stat.exists
+  tags:
+    - vagrant
