@@ -1,14 +1,26 @@
 ---
+
 - name: checking if vboxdrv kernel module is loaded
   command: lsmod
   register: lsmod
   tags:
     - virtualbox
 
+- name: download virtualbox key
+  get_url:
+    url=https://www.virtualbox.org/download/oracle_vbox.asc
+    validate_certs=False
+    dest=/tmp/oracle_vbox.asc
+    use_proxy=yes
+  when: lsmod.stdout.find('vboxdrv') == -1
+  tags:
+    - virtualbox
+
 - name: adding virtualbox key
   rpm_key:
-    key=https://www.virtualbox.org/download/oracle_vbox.asc
+    key=/tmp/oracle_vbox.asc
     state=present
+    validate_certs=False
   when: lsmod.stdout.find('vboxdrv') == -1
   tags:
     - virtualbox
