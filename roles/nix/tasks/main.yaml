@@ -8,7 +8,8 @@
     createhome=yes
     shell={{ nix_shell }}
     home={{ nix_home }}
-  when: ansible_os_family == 'Suse'
+  tags:
+    - nix
 
 
 - name: enable sudo access for nix
@@ -16,7 +17,8 @@
     dest=/etc/sudoers.d/{{ nix_user }}
     line='{{ nix_user }} ALL=(ALL) NOPASSWD: ALL'
     create=yes
-  when: ansible_os_family == 'Suse'
+  tags:
+    - nix
 
 
 - name: installing nix
@@ -30,6 +32,7 @@
     creates: /nix
   become: yes
   become_user: '{{ nix_user }}'
-  when: ansible_os_family == 'Suse'
+  tags:
+    - nix
 
 
