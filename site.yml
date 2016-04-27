@@ -7,7 +7,15 @@
   become_user: root
   become_method: sudo
 
+  environment:
+    http_proxy: "{{ http_proxy }}"
+    https_proxy: "{{ https_proxy }}"
+    no_proxy: "{{ no_proxy }}"
+
   roles:
+    - { role: mock, when: "'{{ ansible_hostname }}' == 'suse12'" }
+    - { role: mock, when: "'{{ ansible_hostname }}' == 'centos7'" }
+    - proxy-settings
     - os-updates
     - virtualbox
     - vagrant
