@@ -1,6 +1,5 @@
-Deployment scripts for: Mesos Cluster + Marathon + Vagrant
+Ansible deployment code for: Mesos Cluster + Marathon + Vagrant
 ===========================================================
-
 
 
 USAGE:
@@ -8,9 +7,10 @@ USAGE:
 
   virtualenv venv
   . venv/bin/activate
-  pip install ansible
+  pip install -r requirements.txt
 
 Edit inventory/<my new inventory>
+Edit group_vars/all/all.yml
 
   ansible-playbook -i inventory/<my new inventory> site.yaml
 
@@ -19,6 +19,7 @@ And you should have installed:
 * Mesos
 * Virtualbox
 * Vagrant
+* Docker
 
 And running:
 
@@ -26,6 +27,7 @@ And running:
 * Mesos Slave
 * zookeeper
 * Marathon
+* Docker
 
 You can access the Mesos Master on: http://IP_ADDRESS:5050
 
