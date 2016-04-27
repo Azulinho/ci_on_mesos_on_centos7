@@ -43,8 +43,8 @@
 - name: Wait for thing to reboot...
   local_action:
     module: wait_for
-      host={{ inventory_hostname | default(inventory_hostname) }}
-      state=started
-      delay=10
+      host={{ ansible_host }}
+      port=22
+      delay=30
       search_regex=OpenSSH
   sudo: false
