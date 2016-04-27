@@ -1,0 +1,31 @@
+[Unit]
+Description=marathon
+After=mesos-master.service
+Requires=mesos-master.service
+
+[Service]
+#  the type can be:
+#      forking – the startup program will fork a subprocess
+#      normal  -- the startup program is a long running service,
+#                 so systemd will fork a subprocess for this service
+#      oneshot – the service will run and exit
+#
+Type=normal
+#   define environment variables used in startup program
+#EnvironmentFile=-/etc/sysconfig/foobar
+
+UMask=0002
+
+
+#  command line variable ${FOO1} will use /etc/sysconfig/foobar
+#    ${FOO1} and ${FOO2} are also visible inside /root/foobar.sh
+ExecStart={{ nix_bin }}/marathon \
+  --master {{ mesos_master_zk_string }} \
+  --zk {{ marathon_zk_string }}
+
+User={{ nix_user }}
+Group={{ nix_group }}
+
+Restart=Always
+[Install]
+WantedBy=multi-user.target

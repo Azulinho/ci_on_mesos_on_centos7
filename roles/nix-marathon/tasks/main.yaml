@@ -1,0 +1,49 @@
+---
+
+- name: installing marathon through nix
+  shell: |
+    . {{ nix_home }}/.nix-profile/etc/profile.d/nix.sh
+    nix-env -f ~/.nix-defexpr/channels/nixos-15.09/nixpkgs/ -i {{ item }}
+  args:
+    executable: '{{ nix_shell }}'
+  become: yes
+  become_user: '{{ nix_user }}'
+  with_items:
+    - marathon
+    - apache-maven
+    - openjdk
+  tags:
+    - marathon
+    - apache-maven
+    - openjdk
+
+
+- name: deploying marathon files
+  template:
+    src={{ item.src }}
+    dest={{ item.dest }}
+    owner='root'
+  with_items:
+    - { src: 'etc.systemd.system.marathon.service',
+        dest: '/etc/systemd/system/marathon.service' }
+  notify: restart-marathon
+  when: ansible_os_family == 'Suse'
+  tags:
+    - marathon
+    - systemd
+
+
+- name: start services
+  service:
+    name={{ item }}
+    state=started
+    enabled=yes
+  with_items:
+    - marathon
+  when: ansible_os_family == 'Suse'
+  tags:
+    - marathon
+    - systemd
+
+
+
