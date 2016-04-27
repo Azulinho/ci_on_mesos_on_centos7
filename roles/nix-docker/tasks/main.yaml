@@ -1,0 +1,60 @@
+---
+
+- name: create docker group
+  group:
+    name=docker
+    state=present
+  tags:
+    - docker
+
+
+- name: add user to docker group
+  user:
+    name=nix
+    append=yes
+    groups=docker
+  tags:
+    - docker
+
+
+- name: installing docker through nix
+  shell: |
+    . {{ nix_home }}/.nix-profile/etc/profile.d/nix.sh
+    nix-env -f ~/.nix-defexpr/channels/nixos-15.09/nixpkgs/ -i {{ item }}
+  args:
+    executable: '{{ nix_shell }}'
+  become: yes
+  become_user: '{{ nix_user }}'
+  with_items:
+    - docker
+    - docker-compose
+  tags:
+    - docker
+
+
+- name: deploying docker files
+  template:
+    src={{ item.src }}
+    dest={{ item.dest }}
+    owner='root'
+  with_items:
+    - { src: 'etc.systemd.system.docker.service',
+        dest: '/etc/systemd/system/docker.service' }
+    - { src: 'etc.systemd.system.docker.socket',
+        dest: '/etc/systemd/system/docker.socket' }
+  notify: restart-docker
+  tags:
+    - docker
+    - systemd
+
+
+- name: start services
+  service:
+    name={{ item }}
+    state=started
+    enabled=yes
+  with_items:
+    - docker
+  tags:
+    - docker
+    - systemd
