@@ -9,21 +9,13 @@
 
   roles:
     - os-updates
-    #- virtualbox
-    #- vagrant
-    - nix
-    - nix-mesos
-      # - mesos
-      #- docker
-
-  #tasks:
-    #- name: adding epel repository
-      #yum:
-        #name=epel-release
-        #state=present
-
-
-
-
-
-
+    - virtualbox
+    - vagrant
+    - { role: nix, when: "'{{ ansible_os_family }}' == 'Suse'" }
+    - { role: nix-zookeeper, when: "'{{ ansible_os_family }}' == 'Suse'" }
+    - { role: nix-mesos-master, when: "'{{ ansible_os_family }}' == 'Suse'" }
+    - { role: nix-mesos-slave, when: "'{{ ansible_os_family }}' == 'Suse'" }
+    - { role: nix-marathon, when: "'{{ ansible_os_family }}' == 'Suse'" }
+    - { role: mesos, when: "'{{ ansible_os_family }}' == 'RedHat'" }
+    - { role: docker, when: "'{{ ansible_os_family }}' == 'RedHat'" }
+    - { role: nix-docker, when: "'{{ ansible_os_family }}' == 'Suse'" }
