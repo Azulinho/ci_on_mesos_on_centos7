@@ -3,3 +3,13 @@
 
 [suse12]
 192.168.33.97 ansible_ssh_user=vagrant ansible_ssh_private_key_file=.vagrant/machines/suse12/virtualbox/private_key
+
+[centos7:vars]
+http_proxy='http://192.168.1.253:3128'
+https_proxy='https://192.168.1.253:3128'
+no_proxy='127.0.0.1'
+
+[suse12:vars]
+http_proxy='http://192.168.1.253:3128'
+https_proxy='https://192.168.1.253:3128'
+no_proxy='127.0.0.1'
