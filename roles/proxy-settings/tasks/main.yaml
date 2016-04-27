@@ -1,0 +1,133 @@
+---
+
+- name: update /etc/yum.conf
+  lineinfile:
+    dest=/etc/yum.conf
+    line="proxy={{http_proxy}}"
+  when: ansible_os_family == 'RedHat'
+  tags:
+    - proxy
+
+- name: update /etc/sysconfig/proxy
+  lineinfile:
+    dest=/etc/profile.d/proxy.sh
+    line={{ item }}
+    create=yes
+  with_items:
+    - 'export http_proxy={{ http_proxy }}'
+    - 'export https_proxy={{ https_proxy }}'
+    - 'export no_proxy={{ no_proxy }}'
+    - 'export HTTP_PROXY={{ http_proxy }}'
+    - 'export HTTPS_PROXY={{ https_proxy }}'
+    - 'export NO_PROXY={{ no_proxy }}'
+  when: ansible_os_family == 'Suse'
+  tags:
+    - proxy
+
+
+- name: update /etc/profile.d/proxy.sh
+  lineinfile:
+    dest=/etc/profile.d/proxy.sh
+    line={{ item }}
+    create=yes
+  with_items:
+    - 'export http_proxy={{ http_proxy }}'
+    - 'export https_proxy={{ https_proxy }}'
+    - 'export no_proxy={{ no_proxy }}'
+    - 'export HTTP_PROXY={{ http_proxy }}'
+    - 'export HTTPS_PROXY={{ https_proxy }}'
+    - 'export NO_PROXY={{ no_proxy }}'
+  tags:
+    - proxy
+
+
+- name: set permissions for proxy.sh
+  file:
+    path=/etc/profile.d/proxy.sh
+    mode=0755
+  tags:
+    - proxy
+
+
+- name: update /root/.wgetrc
+  lineinfile:
+    dest=/root/.wgetrc
+    line={{ item }}
+    create=yes
+  with_items:
+    - 'http_proxy={{ http_proxy }}'
+    - 'https_proxy={{ https_proxy }}'
+    - 'no_proxy={{ no_proxy }}'
+    - 'HTTP_PROXY={{ http_proxy }}'
+    - 'HTTPS_PROXY={{ https_proxy }}'
+    - 'NO_PROXY={{ no_proxy }}'
+    - 'use_proxy=yes'
+  tags:
+    - proxy
+
+
+- name: does nix user exists
+  stat:
+    path={{ nix_home }}
+  register: check_for_nix_homedir
+  tags:
+    - proxy
+
+
+- name: update /home/nix/.wgetrc
+  lineinfile:
+    dest=/home/nix/.wgetrc
+    line={{ item }}
+    create=yes
+    owner={{nix_user }}
+    group={{ nix_group }}
+  with_items:
+    - 'http_proxy={{ http_proxy }}'
+    - 'https_proxy={{ https_proxy }}'
+    - 'no_proxy={{ no_proxy }}'
+    - 'HTTP_PROXY={{ http_proxy }}'
+    - 'HTTPS_PROXY={{ https_proxy }}'
+    - 'NO_PROXY={{ no_proxy }}'
+    - 'use_proxy=yes'
+  when: check_for_nix_homedir.stat.exists
+  tags:
+    - proxy
+
+
+- name: update /root/.curlrc
+  lineinfile:
+    dest=/root/.curlrc
+    line={{ item }}
+    create=yes
+  with_items:
+    - 'http_proxy={{ http_proxy }}'
+    - 'https_proxy={{ https_proxy }}'
+    - 'no_proxy={{ no_proxy }}'
+    - 'HTTP_PROXY={{ http_proxy }}'
+    - 'HTTPS_PROXY={{ https_proxy }}'
+    - 'NO_PROXY={{ no_proxy }}'
+    - 'use_proxy=yes'
+  tags:
+    - proxy
+
+
+- name: update /home/nix/.curlrc
+  lineinfile:
+    dest=/home/nix/.curlrc
+    line={{ item }}
+    create=yes
+    owner={{ nix_user }}
+    group={{ nix_group }}
+  with_items:
+    - 'http_proxy={{ http_proxy }}'
+    - 'https_proxy={{ https_proxy }}'
+    - 'no_proxy={{ no_proxy }}'
+    - 'HTTP_PROXY={{ http_proxy }}'
+    - 'HTTPS_PROXY={{ https_proxy }}'
+    - 'NO_PROXY={{ no_proxy }}'
+    - 'use_proxy=yes'
+  when: check_for_nix_homedir.stat.exists
+  tags:
+    - proxy
+
+
