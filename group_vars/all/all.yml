@@ -23,17 +23,17 @@ mesos_master_confdir: '/home/nix/mesos-master/conf'
 mesos_master_logdir: '/home/nix/mesos-master/log'
 mesos_master_bind_ip: '127.0.0.1'
 mesos_master_quorum: 1
+mesos_master_zk_string: 'zk://127.0.0.1:2181/mesos'
 
 mesos_slave_bin_start: '/home/nix/mesos-slave/bin/start.sh'
 mesos_slave_datadir: '/home/nix/mesos-slave/data'
 mesos_slave_bindir: '/home/nix/mesos-slave/bin'
 mesos_slave_confdir: '/home/nix/mesos-slave/conf'
 mesos_slave_logdir: '/home/nix/mesos-slave/log'
-mesos_slave_zk_string: 'zk://127.0.01:2181/mesos'
+mesos_slave_zk_string: 'zk://127.0.0.1:2181/mesos'
 mesos_slave_bind_ip: '127.0.0.1'
 
 marathon_url: 'http://downloads.mesosphere.com/marathon/v1.1.0-RC1/marathon-1.1.0-RC1.tgz'
-mesos_master_zk_string: 'zk://127.0.01:2181/mesos'
-marathon_zk_string: 'zk://127.0.01:2181/marathon'
-
+marathon_zk_string: 'zk://127.0.0.1:2181/marathon'
+libprocess_ip: 127.0.0.1
 
