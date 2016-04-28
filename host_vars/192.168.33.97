@@ -1,0 +1,11 @@
+zookeeper_zoo_cfg_server_lines:
+  - 'server.1=192.168.33.97:2888:3888'
+
+mesos_slave_zk_string: 'zk://192.168.33.97:2181/mesos'
+mesos_slave_bind_ip: '192.168.33.97'
+
+mesos_master_zk_string: 'zk://192.168.33.97:2181/mesos'
+mesos_master_bind_ip: '192.168.33.97'
+
+marathon_zk_string: 'zk://192.168.33.97:2181/marathon'
+libprocess_ip: '192.168.33.97'
