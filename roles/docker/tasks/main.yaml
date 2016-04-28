@@ -1,0 +1,20 @@
+---
+
+- name: installing docker
+  shell:
+    'curl -sSL https://get.docker.com/ | sh'
+  args:
+    creates: /usr/bin/docker
+
+- name: starting docker
+  service:
+    name=docker
+    state=started
+    enabled=yes
+
+- name: adding current user to docker group
+  user:
+    name={{ lookup('env','USER') }}
+    groups='docker'
+    append=yes
+
