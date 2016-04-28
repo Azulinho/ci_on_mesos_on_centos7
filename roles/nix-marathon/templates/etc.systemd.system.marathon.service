@@ -15,7 +15,7 @@ Type=normal
 #EnvironmentFile=-/etc/sysconfig/foobar
 
 UMask=0002
-
+Environment=LIBPROCESS_IP={{libprocess_ip}}
 
 #  command line variable ${FOO1} will use /etc/sysconfig/foobar
 #    ${FOO1} and ${FOO2} are also visible inside /root/foobar.sh
