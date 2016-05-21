@@ -14,8 +14,8 @@
 
 - name: enable sudo access for nix
   lineinfile: >
-    dest=/etc/sudoers.d/{{ nix_user }}
-    line='{{ nix_user }} ALL=(ALL) NOPASSWD: ALL'
+    dest="/etc/sudoers.d/{{ nix_user }}"
+    line="{{ nix_user }} ALL=(ALL) NOPASSWD: ALL"
     create=yes
   tags:
     - nix
@@ -25,8 +25,8 @@
   shell: |
     curl https://nixos.org/nix/install | sh
     . {{ nix_home }}/.nix-profile/etc/profile.d/nix.sh
-    nix-channel --add https://nixos.org/channels/nixos-15.09
-    nix-channel --update nixos-15.09
+    nix-channel --add https://nixos.org/channels/nixos-16.03
+    nix-channel --update nixos-16.03
   args:
     chdir: /tmp
     creates: /nix
