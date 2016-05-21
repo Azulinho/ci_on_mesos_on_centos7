@@ -22,6 +22,7 @@ Environment=LIBPROCESS_IP={{libprocess_ip}}
 ExecStart={{ nix_bin }}/marathon \
   --master {{ mesos_master_zk_string }} \
   --task_launch_timeout {{ marathon_task_launch_timeout }} \
+  --zk_max_versions 3 \
   --zk {{ marathon_zk_string }}
 
 User={{ nix_user }}
