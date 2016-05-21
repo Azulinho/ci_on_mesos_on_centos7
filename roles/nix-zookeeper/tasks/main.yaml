@@ -1,9 +1,18 @@
 ---
 
-- name: installing zookeeper through nix
+- name: gather list of installed nix packages
   shell: |
     . {{ nix_home }}/.nix-profile/etc/profile.d/nix.sh
-    nix-env -f ~/.nix-defexpr/channels/nixos-15.09/nixpkgs/ -i {{ item }}
+    nix-env -qa > {{ nix_home }}/nix-env.qa
+  become: yes
+  become_user: '{{ nix_user }}'
+
+- name: installing zookeeper through nix
+  shell: |
+    if ! grep -q "{{ item }}" {{ nix_home}}/nix-env.qa; then
+      . {{ nix_home }}/.nix-profile/etc/profile.d/nix.sh
+      nix-env -f ~/.nix-defexpr/channels/nixos-16.03/nixpkgs/ -i {{ item }}
+    fi
   args:
     executable: '{{ nix_shell }}'
   become: yes
@@ -57,7 +66,9 @@
         dest: '/etc/systemd/system/zookeeper.service',
         owner: 'root' }
 
-  notify: restart-zookeeper
+  notify:
+    - reload systemd
+    - restart-zookeeper
   when: ansible_os_family == 'Suse'
   tags:
     - zookeeper

@@ -10,6 +10,11 @@ Environment="ZOOCFGDIR={{ zookeeper_confdir }}"
 ExecStart={{ zookeeper_bin_start }}
 
 Restart=Always
+RestartSec=20
+LimitNOFILE=16384
+CPUAccounting=true
+MemoryAccounting=true
+KillMode=process
 
 [Install]
 WantedBy=multi-user.target

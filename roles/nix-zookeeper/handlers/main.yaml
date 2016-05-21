@@ -4,3 +4,7 @@
   service:
     name=zookeeper
     state=restarted
+
+- name: reload systemd
+  command: systemctl daemon-reload
+
