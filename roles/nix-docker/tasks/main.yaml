@@ -1,12 +1,18 @@
 ---
 
+- name: gather list of installed nix packages
+  shell: |
+    . {{ nix_home }}/.nix-profile/etc/profile.d/nix.sh
+    nix-env -qa > {{ nix_home }}/nix-env.qa
+  become: yes
+  become_user: '{{ nix_user }}'
+
 - name: create docker group
   group:
     name=docker
     state=present
   tags:
     - docker
-
 
 - name: add user to docker group
   user:
@@ -16,11 +22,12 @@
   tags:
     - docker
 
-
 - name: installing docker through nix
   shell: |
-    . {{ nix_home }}/.nix-profile/etc/profile.d/nix.sh
-    nix-env -f ~/.nix-defexpr/channels/nixos-15.09/nixpkgs/ -i {{ item }}
+    if ! grep -q "{{ item }}" {{ nix_home}}/nix-env.qa; then
+      . {{ nix_home }}/.nix-profile/etc/profile.d/nix.sh
+      nix-env -f ~/.nix-defexpr/channels/nixos-16.03/nixpkgs/ -i {{ item }}
+    fi
   args:
     executable: '{{ nix_shell }}'
   become: yes
@@ -28,6 +35,9 @@
   with_items:
     - docker
     - docker-compose
+  notify:
+    - reload systemd
+    - restart-docker
   tags:
     - docker
 
@@ -42,7 +52,9 @@
         dest: '/etc/systemd/system/docker.service' }
     - { src: 'etc.systemd.system.docker.socket',
         dest: '/etc/systemd/system/docker.socket' }
-  notify: restart-docker
+  notify:
+    - reload systemd
+    - restart-docker
   tags:
     - docker
     - systemd
