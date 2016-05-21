@@ -67,6 +67,18 @@
     - mesos-slave
     - systemd
 
+- name: create mesos-master credential file
+  copy:
+    content='{{ mesos_master_credentials }}'
+    dest='{{ mesos_slave_credentials_file }}'
+    owner='root'
+    mode=0600
+  notify:
+    - reload systemd
+    - restart-mesos-slave
+  tags:
+    - mesos-slave
+    - systemd
 
 - name: start services
   service:
