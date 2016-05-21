@@ -40,8 +40,8 @@ mesos_slave_bind_ip: "{{ ansible_default_ipv4['address'] }}"
 mesos_slave_executor_registration_timeout: '5mins'
 mesos_slave_resources: 'ports(*):[31000-32000]'
 
-marathon_url: 'http://downloads.mesosphere.com/marathon/v1.1.0-RC1/marathon-1.1.0-RC1.tgz'
-marathon_task_launch_timeout: 300000
+marathon_url: 'http://downloads.mesosphere.com/marathon/v1.1.1/marathon-1.1.1.tgz'
+marathon_task_launch_timeout: 600000
 #marathon_zk_string: 'zk://127.0.0.1:2181/marathon'
 marathon_zk_string: "zk://{{ ansible_default_ipv4['address'] }}:2181/marathon"
 #libprocess_ip: 127.0.0.1
