@@ -6,21 +6,31 @@
     nix-env -qa > {{ nix_home }}/nix-env.qa
   become: yes
   become_user: '{{ nix_user }}'
+  with_items:
+    - apache-maven
+    - openjdk
+    - zookeeper
 
 - name: installing zookeeper through nix
   shell: |
     if ! grep -q "{{ item }}" {{ nix_home}}/nix-env.qa; then
       . {{ nix_home }}/.nix-profile/etc/profile.d/nix.sh
       nix-env -f ~/.nix-defexpr/channels/nixos-16.03/nixpkgs/ -i {{ item }}
+      echo "zookeeper.changed"
     fi
   args:
     executable: '{{ nix_shell }}'
   become: yes
   become_user: '{{ nix_user }}'
+  register: zookeeper
+  changed_when: "'zookeeper.changed' in zookeeper.stdout"
   with_items:
-    - zookeeper
     - apache-maven
     - openjdk
+    - zookeeper
+  notify:
+    - reload systemd
+    - restart-zookeeper
   tags:
     - zookeeper
     - apache-maven
@@ -65,7 +75,6 @@
     - { src: 'etc.systemd.system.zookeeper.service',
         dest: '/etc/systemd/system/zookeeper.service',
         owner: 'root' }
-
   notify:
     - reload systemd
     - restart-zookeeper
