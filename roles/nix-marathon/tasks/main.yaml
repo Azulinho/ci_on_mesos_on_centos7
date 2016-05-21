@@ -6,21 +6,28 @@
     nix-env -qa > {{ nix_home }}/nix-env.qa
   become: yes
   become_user: '{{ nix_user }}'
+  tags:
+    - marathon
+    - apache-maven
+    - openjdk
 
 - name: installing marathon through nix
   shell: |
     if ! grep -q "{{ item }}" {{ nix_home}}/nix-env.qa; then
       . {{ nix_home }}/.nix-profile/etc/profile.d/nix.sh
       nix-env -f ~/.nix-defexpr/channels/nixos-16.03/nixpkgs/ -i {{ item }}
+      echo "marathon.changed"
     fi
   args:
     executable: '{{ nix_shell }}'
   become: yes
   become_user: '{{ nix_user }}'
+  register: marathon
+  changed_when: "'marathon.changed' in marathon.stdout"
   with_items:
-    - marathon
     - apache-maven
     - openjdk
+    - marathon
   notify:
     - reload systemd
     - restart-marathon
