@@ -33,6 +33,7 @@ ExecStart={{ nix_bin }}/mesos-slave \
   --docker={{ nix_bin }}/docker \
   --gc_delay={{ mesos_slave_gc_delay }} \
   --isolation=cgroups/cpu,cgroups/mem \
+  --logging_level={{ mesos_slave_logging_level }} \
   --systemd_enable_support=false
 
 User=root
