@@ -21,10 +21,17 @@ Environment=LIBPROCESS_IP={{libprocess_ip}}
 #    ${FOO1} and ${FOO2} are also visible inside /root/foobar.sh
 ExecStart={{ nix_bin }}/marathon \
   --master {{ mesos_master_zk_string }} \
+  --task_launch_timeout {{ marathon_task_launch_timeout }} \
   --zk {{ marathon_zk_string }}
 
 User={{ nix_user }}
 Group={{ nix_group }}
+
+RestartSec=20
+LimitNOFILE=16384
+CPUAccounting=true
+MemoryAccounting=true
+KillMode=process
 
 Restart=Always
 [Install]
