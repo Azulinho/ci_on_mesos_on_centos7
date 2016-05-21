@@ -71,3 +71,17 @@
   tags:
     - mesos-slave
     - systemd
+
+- name: disable firewall on mesos-slaves (suse)
+  service:
+    name={{ item }}
+    state=stopped
+    enabled=no
+  with_items:
+    - SuSEfirewall2
+  tags:
+    - mesos-slave
+    - systemd
+    - firewall
+  when: ansible_os_family == 'Suse'
+
