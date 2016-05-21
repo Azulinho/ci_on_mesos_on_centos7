@@ -36,23 +36,21 @@
     - apache-maven
     - openjdk
 
-
 - name: create required directories
   file:
     path={{ item.path }}
     owner={{ item.owner }}
+    group={{ item.group }}
     state=directory
     recurse=yes
   with_items:
-    - { path: '{{ mesos_master_datadir }}', owner: '{{ nix_user }}' }
-    - { path: '{{ mesos_master_logdir }}', owner: '{{ nix_user }}' }
-    - { path: '{{ mesos_master_bindir }}', owner: '{{ nix_user }}' }
-    - { path: '{{ mesos_master_confdir }}', owner: '{{ nix_user }}' }
+    - { path: '{{ mesos_master_datadir }}', owner: '{{ nix_user }}', group: '{{ nix_group }}' }
+    - { path: '{{ mesos_master_logdir }}', owner: '{{ nix_user }}', group: '{{ nix_group}}' }
+    - { path: '{{ mesos_master_bindir }}', owner: '{{ nix_user }}', group: '{{ nix_group}}' }
+    - { path: '{{ mesos_master_confdir }}', owner: '{{ nix_user }}', group: '{{ nix_group}}' }
   tags:
     - mesos-master
-    - zookeeper
     - marathon
-
 
 - name: deploying mesos-master files
   template:
