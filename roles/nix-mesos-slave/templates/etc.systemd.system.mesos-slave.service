@@ -28,7 +28,6 @@ ExecStart={{ nix_bin }}/mesos-slave \
   --master={{ mesos_slave_zk_string }} \
   --credential={{mesos_slave_credentials_file}} \
   --hostname={{ inventory_hostname }} \
-  --resources={{ mesos_slave_resources }} \
   --log_dir={{ mesos_slave_logdir }} \
   --no-switch_user \
   --docker={{ nix_bin }}/docker \
