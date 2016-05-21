@@ -28,6 +28,11 @@ ExecStart={{ nix_bin }}/mesos-master \
 
 User={{ nix_user }}
 Group={{ nix_group }}
+RestartSec=20
+LimitNOFILE=16384
+CPUAccounting=true
+MemoryAccounting=true
+KillMode=process
 
 Restart=Always
 [Install]
