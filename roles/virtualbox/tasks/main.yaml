@@ -1,5 +1,17 @@
 ---
 
+- name: make sure we have the required python dependencies installed
+  zypper:
+    name={{ item.name }}
+    state={{ item.state }}
+  with_items:
+    - { name: 'patterns-openSUSE-minimal_base-conflicts', state: 'absent' }
+    - { name: 'python', state: 'latest' }
+    - { name: 'python-xml', state: 'latest' }
+  when: ansible_os_family == 'Suse'
+  tags:
+    - virtualbox
+
 - name: checking if vboxdrv kernel module is loaded
   command: lsmod
   register: lsmod
