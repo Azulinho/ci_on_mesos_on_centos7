@@ -4,3 +4,6 @@
   service:
     name=mesos-slave
     state=restarted
+
+- name: reload systemd
+  command: systemctl daemon-reload
