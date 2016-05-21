@@ -23,6 +23,7 @@ ExecStart={{ nix_bin }}/mesos-master \
   --ip={{ mesos_master_bind_ip | default('127.0.0.1') }} \
   --work_dir={{ mesos_master_datadir }} \
   --quorum={{ mesos_master_quorum }} \
+  --hostname={{ inventory_hostname }} \
   --zk={{ mesos_master_zk_string }} \
   --log_dir={{ mesos_master_logdir }}
 
