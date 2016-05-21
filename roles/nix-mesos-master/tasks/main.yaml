@@ -6,21 +6,28 @@
     nix-env -qa > {{ nix_home }}/nix-env.qa
   become: yes
   become_user: '{{ nix_user }}'
+  tags:
+    - mesos-master
+    - apache-maven
+    - openjdk
 
 - name: installing mesos through nix
   shell: |
     if ! grep -q "{{ item }}" {{ nix_home}}/nix-env.qa; then
       . {{ nix_home }}/.nix-profile/etc/profile.d/nix.sh
       nix-env -f ~/.nix-defexpr/channels/nixos-16.03/nixpkgs/ -i {{ item }}
+      echo "mesos-master.changed"
     fi
   args:
     executable: '{{ nix_shell }}'
   become: yes
   become_user: '{{ nix_user }}'
+  register: mesos
+  changed_when: "'mesos-master.changed' in mesos.stdout"
   with_items:
-    - mesos-0.27.1
     - apache-maven
     - openjdk
+    - mesos-0.27.1
   notify:
     - reload systemd
     - restart-mesos-master
