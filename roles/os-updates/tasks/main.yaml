@@ -20,7 +20,7 @@
 - name: Reboot host if kernel was upgraded
   shell: |
     if [ -e "/etc/SuSE-release" ]; then
-      if [ "$(readlink -f /vmlinuz)" != "/boot/vmlinuz-$(uname -r)" ]; then
+      if [ "$(readlink -f /boot/vmlinuz)" != "/boot/vmlinuz-$(uname -r)" ]; then
         echo "rebooting ..."
         sleep 2
         reboot
