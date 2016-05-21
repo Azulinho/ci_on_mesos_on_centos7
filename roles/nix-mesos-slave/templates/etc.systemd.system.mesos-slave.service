@@ -16,18 +16,29 @@ Type=normal
 
 UMask=0002
 
+Environment=PATH=/home/nix/.nix-profile/bin:/sbin:/usr/sbin:/usr/local/sbin:/root/bin:/usr/local/bin:/usr/bin:/bin:/usr/X11R6/bin:/usr/games
 
 #  command line variable ${FOO1} will use /etc/sysconfig/foobar
 #    ${FOO1} and ${FOO2} are also visible inside /root/foobar.sh
 ExecStart={{ nix_bin }}/mesos-slave \
   --ip={{ mesos_slave_bind_ip | default('127.0.0.1') }} \
   --work_dir={{ mesos_slave_datadir }} \
+  --containerizers=docker,mesos \
+  --executor_registration_timeout={{ mesos_slave_executor_registration_timeout }} \
   --master={{ mesos_slave_zk_string }} \
-  --log_dir={{ mesos_slave_logdir }}
+  --resources={{ mesos_slave_resources }} \
+  --log_dir={{ mesos_slave_logdir }} \
+  --no-switch_user \
+  --docker={{ nix_bin }}/docker \
+  --isolation=cgroups/cpu,cgroups/mem \
+  --systemd_enable_support=false
 
-User=nix
-Group=users
+User=root
+Group=root
 
+RestartSec=20
+KillMode=process
 Restart=Always
+
 [Install]
 WantedBy=multi-user.target
