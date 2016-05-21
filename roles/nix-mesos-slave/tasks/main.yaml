@@ -36,18 +36,18 @@
     - apache-maven
     - openjdk
 
-
 - name: create required directories
   file:
     path={{ item.path }}
     owner={{ item.owner }}
+    group={{ item.group }}
     state=directory
     recurse=yes
   with_items:
-    - { path: '{{ mesos_slave_datadir }}', owner: '{{ nix_user }}' }
-    - { path: '{{ mesos_slave_logdir }}', owner: '{{ nix_user }}' }
-    - { path: '{{ mesos_slave_bindir }}', owner: '{{ nix_user }}' }
-    - { path: '{{ mesos_slave_confdir }}', owner: '{{ nix_user }}' }
+    - { path: '{{ mesos_slave_datadir }}', owner: 'root', group: 'root' }
+    - { path: '{{ mesos_slave_logdir }}', owner: 'root', group: 'root' }
+    - { path: '{{ mesos_slave_bindir }}', owner: 'root', group: 'root' }
+    - { path: '{{ mesos_slave_confdir }}', owner: 'root', group: 'root' }
   tags:
     - mesos-slave
 
