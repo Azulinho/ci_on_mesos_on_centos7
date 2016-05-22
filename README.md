@@ -43,7 +43,7 @@ You can access the Mesos Master on: http://IP_ADDRESS:5050
 The marathon frameworks is also installed and available on http://IP_ADDRESS:8080
 
 
-This setup would allow you to consume this mesos cluster through the Jenkins Mesos Plugin, and the (forked) Jenkins Vagrant plugin (https://github.com/Azulinho/vagrant-plugin.git)
+This setup would allow you to consume this mesos cluster through the Jenkins Mesos Plugin, ~~and the (forked) Jenkins Vagrant plugin (https://github.com/Azulinho/vagrant-plugin.git)~~
 
 So that a jenkins job would allocate a mesos slave on demand and spin up an ephemeral vagrant instance (linux/windows/OSX) to run a particular build/test/deployment test job.
 
