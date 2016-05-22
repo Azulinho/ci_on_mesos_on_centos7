@@ -3,9 +3,11 @@
 - name: gather list of installed nix packages
   shell: |
     . {{ nix_home }}/.nix-profile/etc/profile.d/nix.sh
-    nix-env -qa > {{ nix_home }}/nix-env.qa
+    nix-env -q > {{ nix_home }}/nix-env.q
   become: yes
   become_user: '{{ nix_user }}'
+  tags:
+    - docker
 
 - name: create docker group
   group:
@@ -24,14 +26,17 @@
 
 - name: installing docker through nix
   shell: |
-    if ! grep -q "{{ item }}" {{ nix_home}}/nix-env.qa; then
+    if ! grep -q "{{ item }}" {{ nix_home}}/nix-env.q; then
       . {{ nix_home }}/.nix-profile/etc/profile.d/nix.sh
       nix-env -f ~/.nix-defexpr/channels/nixos-16.03/nixpkgs/ -i {{ item }}
+      echo "docker.changed"
     fi
   args:
     executable: '{{ nix_shell }}'
   become: yes
   become_user: '{{ nix_user }}'
+  register: docker
+  changed_when: "'docker.changed' in docker.stdout"
   with_items:
     - docker
     - docker-compose
