@@ -25,7 +25,11 @@ ExecStart={{ nix_bin }}/mesos-master \
   --quorum={{ mesos_master_quorum }} \
   --hostname={{ inventory_hostname }} \
   --zk={{ mesos_master_zk_string }} \
-  --log_dir={{ mesos_master_logdir }}
+  --log_dir={{ mesos_master_logdir }} \
+  --authenticate \
+  --authenticate_slaves \
+  --credentials={{ mesos_master_credentials_file }} \
+  --logging_level={{ mesos_master_logging_level |default('WARNING') }}
 
 User={{ nix_user }}
 Group={{ nix_group }}

@@ -67,6 +67,18 @@
     - mesos-master
     - systemd
 
+- name: create mesos-master credential file
+  copy:
+    content='{{ mesos_master_credentials }}'
+    dest='{{ mesos_master_credentials_file }}'
+    owner='{{ nix_user }}'
+    group='{{ nix_group }}'
+  notify:
+    - reload systemd
+    - restart-mesos-master
+  tags:
+    - mesos-master
+    - systemd
 
 - name: start services
   service:
