@@ -31,12 +31,12 @@ mesos_slave_datadir: '/home/nix/mesos-slave/data'
 mesos_slave_bindir: '/home/nix/mesos-slave/bin'
 mesos_slave_confdir: '/home/nix/mesos-slave/conf'
 mesos_slave_logdir: '/home/nix/mesos-slave/log'
-#mesos_slave_zk_string: 'zk://127.0.0.1:2181/mesos'
 mesos_slave_zk_string: "zk://{{ ansible_default_ipv4['address'] }}:2181/mesos"
-#mesos_slave_bind_ip: '127.0.0.1'
 mesos_slave_bind_ip: "{{ ansible_default_ipv4['address'] }}"
 mesos_slave_executor_registration_timeout: '5mins'
-mesos_slave_resources: 'ports(*):[31000-32000]'
+mesos_slave_credentials_file: '/home/nix/mesos-slave/conf/credentials'
+mesos_slave_gc_delay: '1days'
+mesos_slave_logging_level: 'WARNING'
 
 marathon_url: 'http://downloads.mesosphere.com/marathon/v1.1.1/marathon-1.1.1.tgz'
 marathon_task_launch_timeout: 600000
