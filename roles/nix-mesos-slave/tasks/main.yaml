@@ -11,6 +11,11 @@
     - apache-maven
     - openjdk
 
+# TODO: there is one package for the mesos-master and slave.
+# this means that when the mesos-master playbook updates the mesos package
+# it will trigger a notify to restart the mesos-master service.
+# However a run of the mesos-slave playbook won't trigger the restart of the
+# mesos-slave service as it won't find a package to upgrade.
 - name: installing mesos through nix
   shell: |
     if ! grep -q "{{ item }}" {{ nix_home}}/nix-env.qa; then

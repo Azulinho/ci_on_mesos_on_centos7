@@ -36,7 +36,6 @@
     - apache-maven
     - openjdk
 
-
 - name: deploying marathon files
   template:
     src={{ item.src }}
@@ -93,6 +92,3 @@
   tags:
     - marathon
     - systemd
-
-
-
