@@ -94,7 +94,14 @@
   shell: |
     KERN_DIR=/usr/src/kernels/`rpm -q kernel-devel --queryformat '%{version}-%{release}.%{arch}'` \
     /usr/lib/virtualbox/vboxdrv.sh setup
-  when: lsmod.stdout.find('vboxdrv') == -1
+  when: lsmod.stdout.find('vboxdrv') == -1 and ansible_os_family == 'RedHat'
+  tags:
+    - virtualbox
+
+- name: recompiling virtualbox driver
+  shell: |
+    /usr/lib/virtualbox/vboxdrv.sh setup
+  when: lsmod.stdout.find('vboxdrv') == -1 and ansible_os_family == 'Suse'
   tags:
     - virtualbox
 
