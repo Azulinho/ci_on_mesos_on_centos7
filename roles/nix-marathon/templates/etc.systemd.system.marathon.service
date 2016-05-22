@@ -23,7 +23,13 @@ ExecStart={{ nix_bin }}/marathon \
   --master {{ mesos_master_zk_string }} \
   --task_launch_timeout {{ marathon_task_launch_timeout }} \
   --zk_max_versions 3 \
-  --zk {{ marathon_zk_string }}
+  --zk {{ marathon_zk_string }} \
+  --hostname {{ ansible_hostname }} \
+  --framework_name '{{ ansible_hostname }}_marathon' \
+  --mesos_authentication_principal {{ marathon_mesos_authentication_principal }} \
+  --mesos_authentication_secret_file {{ marathon_mesos_authentication_secret_file }} \
+  --http_credentials {{ marathon_http_credentials }}
+
 
 User={{ nix_user }}
 Group={{ nix_group }}

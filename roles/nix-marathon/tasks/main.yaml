@@ -53,6 +53,34 @@
     - marathon
     - systemd
 
+- name: create required directories
+  file:
+    path={{ item.path }}
+    owner={{ item.owner }}
+    group={{ item.group }}
+    state=directory
+    recurse=yes
+  with_items:
+    - { path: '{{ marathon_datadir }}', owner: '{{ nix_user }}', group: '{{ nix_group }}' }
+    - { path: '{{ marathon_logdir }}', owner: '{{ nix_user }}', group: '{{ nix_group }}' }
+    - { path: '{{ marathon_bindir }}', owner: '{{ nix_user }}', group: '{{ nix_group }}' }
+    - { path: '{{ marathon_confdir }}', owner: '{{ nix_user }}', group: '{{ nix_group }}' }
+  tags:
+    - marathon
+
+- name: create mesos-master authentication file
+  copy:
+    content='{{ marathon_mesos_master_principal_password }}'
+    dest='{{ marathon_mesos_authentication_secret_file }}'
+    owner='{{ nix_user }}'
+    group='{{ nix_group }}'
+    mode=0600
+  notify:
+    - reload systemd
+    - restart-marathon
+  tags:
+    - marathon
+    - systemd
 
 - name: start services
   service:
