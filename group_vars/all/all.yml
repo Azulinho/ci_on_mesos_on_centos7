@@ -40,8 +40,13 @@ mesos_slave_logging_level: 'WARNING'
 
 marathon_url: 'http://downloads.mesosphere.com/marathon/v1.1.1/marathon-1.1.1.tgz'
 marathon_task_launch_timeout: 600000
-#marathon_zk_string: 'zk://127.0.0.1:2181/marathon'
+marathon_http_credentials: 'admin:!password123'
+marathon_mesos_authentication_principal: 'mesos'
+marathon_mesos_authentication_secret_file: '/home/nix/marathon/conf/secret'
+marathon_mesos_master_principal_password: '!password123'
 marathon_zk_string: "zk://{{ ansible_default_ipv4['address'] }}:2181/marathon"
-#libprocess_ip: 127.0.0.1
 libprocess_ip: "{{ ansible_default_ipv4['address'] }}"
-
+marathon_datadir: '/home/nix/marathon/data'
+marathon_bindir: '/home/nix/marathon/bin'
+marathon_confdir: '/home/nix/marathon/conf'
+marathon_logdir: '/home/nix/marathon/log'
